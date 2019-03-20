@@ -1,0 +1,86 @@
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<head>
+    <title>商品秒杀系统</title>
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+</head>
+
+<body>
+    <h1></h1>
+    <input id="stock" placeholder="商品库存，默认10000" type="number"/><br/><br/>
+    <input id="init" value="重置库存" type="button"/><br/><br/>
+    <input id="concurrent" placeholder="并发数量，默认100" type="number"/><br/><br/>
+    <input id="program" placeholder="秒杀方案，默认对照组" type="text"/><br/><br/>
+    <input id="start" value="开始秒杀" type="button"/>
+    <input id="stop" value="停止秒杀" type="button"/>
+</body>
+
+<script>
+    // 设置秒杀状态
+    function getSeckillStatus() {
+        $.ajax({
+            type: 'GET',
+            url:"/status",
+            success:function(result){
+                result = result['data']
+                var statsText = "商品：【"+result['productName']+"】目前剩余"+
+                        result['productQuantity']+"个，该商品成功下单人数："+
+                        result['successCount']+"人"
+                $("h1").text(statsText);
+            }
+        });
+    }
+
+    // TODO 显示秒杀方案列表
+    $(document).ready(getSeckillStatus());
+
+    // 初始化库存和秒杀成功人数
+    $("#init").click(function () {
+        $.ajax({
+            type: 'POST',
+            url:"/init",
+            data:JSON.stringify({
+                quantity:$("#stock").val()
+            }),
+            contentType: 'application/json',
+            success:function(result){
+                // 刷新库存状态
+                getSeckillStatus();
+            }
+        });
+    });
+
+    var status;
+    // 开始秒杀
+    $("#start").click(function () {
+        $.ajax({
+            type: 'post',
+            url:"/start",
+            data:JSON.stringify({
+                program:$("#program").val(),
+                concurrent:$("#concurrent").val()
+            }),
+            contentType: 'application/json',
+            success:function(result){
+                $("h1").text("开始秒杀");
+            }
+        });
+        // 刷新秒杀状态
+        status = setInterval(getSeckillStatus,1000);
+    });
+
+    // 停止秒杀
+    $("#stop").click(function () {
+        $.ajax({
+            type: 'get',
+            url:"/stop",
+            contentType: 'application/json',
+            success:function(result){
+                getSeckillStatus();
+            }
+        })
+        clearInterval(status);
+    });
+</script>
+
+</html>

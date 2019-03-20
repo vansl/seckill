@@ -1,0 +1,7 @@
+/target/
+!.mvn/wrapper/maven-wrapper.jar
+.idea
+*.iws
+*.iml
+*.ipr
+/src/main/resources/application.yml

@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: username
+    password: password
+    url: jdbc:mysql://host/seckill?characterEncoding=utf-8&useSSL=false
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  redis:
+    host: host
+    port: 6379
+  mvc:
+    view:
+      prefix: /
+      suffix: .html
