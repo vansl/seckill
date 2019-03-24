@@ -17,7 +17,7 @@ public class Product {
 
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
-    private Integer productId;
+    private Long productId;
 
     /** 商品名称 **/
     private String productName;

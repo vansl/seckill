@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Service
@@ -26,16 +25,16 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional(isolation=Isolation.SERIALIZABLE)
     public void initStock(Long quantity) {
-        List<Product> productList = findAll();
-        if (productList.size()==0) {
+        Product product = productRepository.findById(1L).orElse(null);
+        if (product==null) {
             // 新增商品
-            Product product = new Product();
+            product = new Product();
+            product.setProductId(1L);
             product.setProductName("iPhone SE");
             product.setProductPrice(new BigDecimal(2999));
             product.setProductQuantity(quantity);
             productRepository.save(product);
         } else {
-            Product product = productList.get(0);
             product.setProductQuantity(quantity);
             productRepository.save(product);
         }
@@ -44,8 +43,8 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<Product> findAll() {
-        return productRepository.findAll();
+    public Product findById(Long id) {
+        return productRepository.findById(1L).orElse(null);
     }
 
     @Override
@@ -74,8 +73,7 @@ public class ProductServiceImpl implements ProductService {
      * @date 2019-03-20 10:00:02       
      **/
     public void program() {
-        List<Product> productList = findAll();
-        Product product = productList.get(0);
+        Product product = productRepository.findById(1L).orElse(null);
         Long oldQuantity = product.getProductQuantity();
         if (product.getProductQuantity() >= 1) {
             product.setProductQuantity(oldQuantity - 1);
@@ -93,11 +91,36 @@ public class ProductServiceImpl implements ProductService {
      * @date 2019-03-20 10:00:12       
      **/
     public synchronized void programA() {
-        List<Product> productList = findAll();
-        Product product = productList.get(0);
+        Product product = productRepository.findById(1L).orElse(null);
         Long oldQuantity = product.getProductQuantity();
+        if (oldQuantity<1) {
+            throw new RuntimeException("库存不足");
+        }
         product.setProductQuantity(oldQuantity-1);
         productRepository.save(product);
         successCount.incrementAndGet();
+    }
+
+    /**
+     * @description 方案B：使用`Read-Commited`以上隔离级别的事务+库存限制+回滚
+     * @date 2019-03-25 00:56:25
+     **/
+    @Transactional(isolation=Isolation.READ_COMMITTED)
+    public void programB() {
+        Integer count = productRepository.safeDecreaseProductQuantity(1L,1L);
+        if (count==0) {
+            throw new RuntimeException("库存不足");
+        }
+        successCount.incrementAndGet();
+    }
+
+    
+    
+    /**
+     * @description 使用`CAS`乐观锁
+     * @date 2019-03-25 01:00:32       
+     **/
+    public void programC() {
+        
     }
 }

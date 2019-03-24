@@ -13,7 +13,7 @@ public interface ProductService {
      **/
     void initStock(Long quantity);
 
-    List<Product> findAll();
+    Product findById(Long id);
 
     /**
      * @description 获取秒杀成功的人数

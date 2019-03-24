@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 
 @RestController
@@ -50,10 +51,8 @@ public class SeckillController {
     public ResultVO<SeckillDTO> list() {
         ResultVO<SeckillDTO> result = new ResultVO<>();
         SeckillDTO seckillDTO = new SeckillDTO();
-        // 只返回一件商品
-        List<Product> productList = productService.findAll();
         // TODO 商品尚未初始化异常
-        Product product = productList.get(0);
+        Product product = productService.findById(1L);
         BeanUtils.copyProperties(product,seckillDTO);
         // 返回成功下单人数
         seckillDTO.setSuccessCount(productService.findSuccessCount());
