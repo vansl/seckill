@@ -20,11 +20,12 @@
 ### 对照组：select+update发生超卖问题
 
 ### 方案A：使用`synchronized`或`Serializable`隔离级别的事务串行化执行
+这种方案无需多说。
 
 ### 方案B：使用`Read-Commited`以上隔离级别的事务+库存限制+回滚
 `update product set product_quantity=product_quantity-num where product_quantity >= num and product_id=1;`
 这个方案可以保证不会发生超卖问题：如果`update`操作返回的行数为0，那么抛出`RuntimeException`异常，回滚取消订单即可。由于是`Read-Commited`级别的事务，回滚并不会导致脏读。
-但是实际操作中少见该方案，我的一个猜测是并发高时冲突率过高，回滚严重性能下降。目前还未去验证这个猜测正确与否。
+但是实际操作中少见该方案，我的一个猜测是并发高时冲突率过高，会导致回滚严重，性能下降。目前还未去验证这个猜测正确与否。
 
 ### 方案C：使用`CAS`乐观锁
 
@@ -48,8 +49,8 @@
 
 ### 方案H：使用redis确认+消息队列异步扣减
 
-### others：修改数据库源码、`Group commit`.....
-参考[秒杀场景下MySQL的低效--原因和改进](https://wenku.baidu.com/view/128b76190722192e4536f6de.html)
+### 其他方案：修改数据库源码、`Group commit`.....
+详见[秒杀场景下MySQL的低效--原因和改进](https://wenku.baidu.com/view/128b76190722192e4536f6de.html)
 
 
 ## 三、TODO

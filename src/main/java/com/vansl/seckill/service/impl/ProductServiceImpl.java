@@ -121,6 +121,32 @@ public class ProductServiceImpl implements ProductService {
      * @date 2019-03-25 01:00:32       
      **/
     public void programC() {
-        
+        Long expectNum;
+        while (true) {
+            Product product = productRepository.findById(1L).orElse(null);
+            expectNum = product.getProductQuantity();
+            if (expectNum==0) {
+                throw new RuntimeException("库存不足");
+            }
+            Integer count = productRepository.casDecreaseProductQuantity(1L,1L,expectNum);
+            if (count!=0) {
+                successCount.incrementAndGet();
+                break;
+            }
+        }
+    }
+
+    /**
+     * @description 使用事务+排他锁(for update)
+     * @date 2019-03-26 00:55:08
+     **/
+    @Transactional
+    public void programD() {
+        Integer quantity = productRepository.lockGetProductQuantity(1L);
+        if (quantity<1) {
+            throw new RuntimeException("库存不足");
+        }
+        productRepository.decreaseProductQuantity(1L,1L);
+        successCount.incrementAndGet();
     }
 }
